@@ -28,6 +28,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
     private static final String TAG = "MainActivity";
     private TextView mTextView;
+    private DeviceClient client;
     private MobvoiApiClient mMobvoiApiClient;
     private SensorManager mSensorManager;
     private Sensor mHeartRate;
