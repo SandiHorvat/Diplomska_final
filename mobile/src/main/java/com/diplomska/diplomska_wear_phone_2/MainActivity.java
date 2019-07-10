@@ -1,6 +1,6 @@
 package com.diplomska.diplomska_wear_phone_2;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,7 +9,7 @@ import com.mobvoi.android.common.ConnectionResult;
 import com.mobvoi.android.common.api.MobvoiApiClient;
 import com.mobvoi.android.wearable.Wearable;
 
-public class MainActivity extends AppCompatActivity implements MobvoiApiClient.ConnectionCallbacks, MobvoiApiClient.OnConnectionFailedListener {
+public class MainActivity extends Activity implements MobvoiApiClient.ConnectionCallbacks, MobvoiApiClient.OnConnectionFailedListener {
 
     private MobvoiApiClient mMobvoiApiClient;
     private static final String TAG = "MainActivity";
