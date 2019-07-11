@@ -16,12 +16,15 @@ import android.widget.TextView;
 import com.mobvoi.android.common.ConnectionResult;
 import com.mobvoi.android.common.api.MobvoiApiClient;
 import com.mobvoi.android.wearable.Asset;
+import com.mobvoi.android.wearable.PutDataMapRequest;
+import com.mobvoi.android.wearable.PutDataRequest;
 import com.mobvoi.android.wearable.Wearable;
 
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
 
 public class MainActivity extends WearableActivity implements SensorEventListener, MobvoiApiClient.ConnectionCallbacks, MobvoiApiClient.OnConnectionFailedListener {
 
@@ -141,6 +144,24 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private void stopMeasure() {
         mSensorManager.unregisterListener(this);
         mScheduler.shutdown();
+    }
+
+    private void sendSensorDataInBackground(int sensorType, int accuracy, long timestamp, float[] values){
+
+
+        PutDataMapRequest dataMap = PutDataMapRequest.create("/sensors/" + sensorType);
+
+        dataMap.getDataMap().putInt(DataMapKeys.ACCURACY, accuracy);
+        dataMap.getDataMap().putLong(DataMapKeys.TIMESTAMP, timestamp);
+        dataMap.getDataMap().putFloatArray(DataMapKeys.VALUES, values);
+
+        PutDataRequest putDataRequest = dataMap.asPutDataRequest();
+        //send(putDataRequest);
+
+    }
+
+    private void Send(PutDataRequest putDataRequest){
+
     }
 
 
