@@ -15,7 +15,9 @@ import android.widget.TextView;
 
 import com.mobvoi.android.common.ConnectionResult;
 import com.mobvoi.android.common.api.MobvoiApiClient;
+import com.mobvoi.android.common.api.ResultCallback;
 import com.mobvoi.android.wearable.Asset;
+import com.mobvoi.android.wearable.DataApi;
 import com.mobvoi.android.wearable.PutDataMapRequest;
 import com.mobvoi.android.wearable.PutDataRequest;
 import com.mobvoi.android.wearable.Wearable;
@@ -161,8 +163,15 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     }
 
     private void Send(PutDataRequest putDataRequest){
-
+        Wearable.DataApi.putDataItem(mMobvoiApiClient, putDataRequest).setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override
+            public void onResult(DataApi.DataItemResult dataItemResult) {
+                Log.v(TAG, "Sending sensor data: " + dataItemResult.getStatus().isSuccess());
+            }
+        });
     }
+
+
 
 
     @Override
