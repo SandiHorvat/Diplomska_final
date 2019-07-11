@@ -3,4 +3,6 @@
     <string name="hello_something">Testing testisi 1 2 1 2 1</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="info">I</string>
+    <string name="send">S</string>
 </resources>
