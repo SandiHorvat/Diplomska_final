@@ -10,6 +10,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
+import android.util.SparseLongArray;
 import android.view.View;
 import android.widget.TextView;
 
@@ -23,6 +24,7 @@ import com.mobvoi.android.wearable.PutDataRequest;
 import com.mobvoi.android.wearable.Wearable;
 
 import java.io.ByteArrayOutputStream;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +41,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private Sensor mHeartRate;
     private ScheduledExecutorService mScheduler;
     private static final int MY_PERMISSIONS_REQUEST_BODY_SENSORS = 1;
+    private int filterId;
+    private SparseLongArray lastSensorData;
+    private ExecutorService executorService;
 
     @Override
 
@@ -69,6 +74,10 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 (SensorManager)getSystemService(SENSOR_SERVICE);
         mHeartRate = mSensorManager.getDefaultSensor(
                 Sensor.TYPE_HEART_RATE);
+
+
+        executorService = Executors.newCachedThreadPool();
+        lastSensorData = new SparseLongArray();
 
     }
 
@@ -105,13 +114,13 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     }
 
 
-
+/*
 
     private static Asset createAssetFromBitmap(Bitmap bitmap) {
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        return Asset.createFromBytes(byteStream.toByteArray());
+    final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+    return Asset.createFromBytes(byteStream.toByteArray());
     }
-
+    */
 
 
     private void startMeasure() {
@@ -148,7 +157,36 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         mScheduler.shutdown();
     }
 
+    public void sendSonsorData(final int sensorType, final int accuracy, final long timestamp, final float[] values){
+        long t = System.currentTimeMillis();
+
+        long lastTimestamp = lastSensorData.get(sensorType);
+        long timeAgo = t - lastTimestamp;
+
+        if (lastTimestamp != 0) {
+            if (filterId == sensorType && timeAgo < 100) {
+                return;
+            }
+            if (filterId != sensorType && timeAgo < 3000) {
+                return;
+            }
+        }
+
+        lastSensorData.put(sensorType, t);
+
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                sendSensorDataInBackground(sensorType, accuracy, timestamp, values);
+            }
+        });
+
+    }
+
+
     private void sendSensorDataInBackground(int sensorType, int accuracy, long timestamp, float[] values){
+
+        // dodaj sensorType filter pozneje
 
 
         PutDataMapRequest dataMap = PutDataMapRequest.create("/sensors/" + sensorType);
@@ -173,6 +211,11 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
 
 
+    public void setSensorFilter(int filterId){
+        Log.d(TAG,"Now filtering by sensor: " + filterId);
+
+        this.filterId = filterId;
+    }
 
     @Override
     public void onConnected(Bundle bundle) {
