@@ -158,11 +158,11 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         dataMap.getDataMap().putFloatArray(DataMapKeys.VALUES, values);
 
         PutDataRequest putDataRequest = dataMap.asPutDataRequest();
-        //send(putDataRequest);
+        send(putDataRequest);
 
     }
 
-    private void Send(PutDataRequest putDataRequest){
+    private void send(PutDataRequest putDataRequest){
         Wearable.DataApi.putDataItem(mMobvoiApiClient, putDataRequest).setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
             @Override
             public void onResult(DataApi.DataItemResult dataItemResult) {
