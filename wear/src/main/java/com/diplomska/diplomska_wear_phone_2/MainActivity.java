@@ -76,6 +76,10 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 Sensor.TYPE_HEART_RATE);
 
 
+
+
+
+
         executorService = Executors.newCachedThreadPool();
         lastSensorData = new SparseLongArray();
 
@@ -157,65 +161,12 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         mScheduler.shutdown();
     }
 
-    public void sendSonsorData(final int sensorType, final int accuracy, final long timestamp, final float[] values){
-        long t = System.currentTimeMillis();
-
-        long lastTimestamp = lastSensorData.get(sensorType);
-        long timeAgo = t - lastTimestamp;
-
-        if (lastTimestamp != 0) {
-            if (filterId == sensorType && timeAgo < 100) {
-                return;
-            }
-            if (filterId != sensorType && timeAgo < 3000) {
-                return;
-            }
-        }
-
-        lastSensorData.put(sensorType, t);
-
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                sendSensorDataInBackground(sensorType, accuracy, timestamp, values);
-            }
-        });
-
-    }
-
-
-    private void sendSensorDataInBackground(int sensorType, int accuracy, long timestamp, float[] values){
-
-        // dodaj sensorType filter pozneje
-
-
-        PutDataMapRequest dataMap = PutDataMapRequest.create("/sensors/" + sensorType);
-
-        dataMap.getDataMap().putInt(DataMapKeys.ACCURACY, accuracy);
-        dataMap.getDataMap().putLong(DataMapKeys.TIMESTAMP, timestamp);
-        dataMap.getDataMap().putFloatArray(DataMapKeys.VALUES, values);
-
-        PutDataRequest putDataRequest = dataMap.asPutDataRequest();
-        send(putDataRequest);
-
-    }
-
-    private void send(PutDataRequest putDataRequest){
-        Wearable.DataApi.putDataItem(mMobvoiApiClient, putDataRequest).setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-            @Override
-            public void onResult(DataApi.DataItemResult dataItemResult) {
-                Log.v(TAG, "Sending sensor data: " + dataItemResult.getStatus().isSuccess());
-            }
-        });
-    }
 
 
 
-    public void setSensorFilter(int filterId){
-        Log.d(TAG,"Now filtering by sensor: " + filterId);
 
-        this.filterId = filterId;
-    }
+
+
 
     @Override
     public void onConnected(Bundle bundle) {
