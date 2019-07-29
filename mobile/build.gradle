@@ -33,4 +33,6 @@ dependencies {
     api "com.ticwear:mobvoi-api:1.1.1"
     androidTestImplementation 'junit:junit:4.12'
     testImplementation 'junit:junit:4.12'
+
+    implementation 'io.realm:realm-android:0.80.3'
 }
