@@ -63,7 +63,7 @@ public class DeviceClient implements  MobvoiApiClient.ConnectionCallbacks, Mobvo
     }
 
 
-    public void sendSonsorData(final int sensorType, final int accuracy, final long timestamp, final float[] values){
+    public void sendSensorData(final int sensorType, final int accuracy, final long timestamp, final float[] values){
         long t = System.currentTimeMillis();
 
         long lastTimestamp = lastSensorData.get(sensorType);
