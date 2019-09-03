@@ -51,6 +51,8 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        client = DeviceClient.getInstance(this);
+
         mTextView = (TextView) findViewById(R.id.text);
 
 
@@ -101,14 +103,14 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                     MY_PERMISSIONS_REQUEST_BODY_SENSORS);
             if (checkSelfPermission(Manifest.permission.BODY_SENSORS)
                     != PackageManager.PERMISSION_GRANTED){
-                System.out.print(" Drugi if stavek.");
+                System.out.print(" Second if statement.");
             }
             else{
-                System.out.print(" Drugi else.");
+                System.out.print(" Secondd else.");
             }
         }
         else{
-            System.out.print(" NE Deluje.");
+            System.out.print("NOt working.");
         }
         startMeasure();
     }
@@ -163,7 +165,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
 
 
-
+    public void onClickBtnI(View v){
+        System.out.println("PRoba");
+    }
 
 
 
@@ -188,6 +192,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     public void onSensorChanged(SensorEvent sensorEvent) {
 
         client.sendSensorData(sensorEvent.sensor.getType(), sensorEvent.accuracy, sensorEvent.timestamp, sensorEvent.values);
+        // Printing message and loging just to see if method is called
+        System.out.println("SendSensorData success!!!");
+        Log.d(TAG, "SendSensor data success");
 
     }
 
