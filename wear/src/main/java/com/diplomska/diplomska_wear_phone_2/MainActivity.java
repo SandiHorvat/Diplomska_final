@@ -1,6 +1,7 @@
 package com.diplomska.diplomska_wear_phone_2;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.hardware.Sensor;
@@ -8,6 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.util.SparseLongArray;
@@ -24,13 +26,15 @@ import com.mobvoi.android.wearable.PutDataRequest;
 import com.mobvoi.android.wearable.Wearable;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
-public class MainActivity extends WearableActivity implements SensorEventListener, MobvoiApiClient.ConnectionCallbacks, MobvoiApiClient.OnConnectionFailedListener {
+public class MainActivity extends WearableActivity implements SensorEventListener, MobvoiApiClient.ConnectionCallbacks, MobvoiApiClient.OnConnectionFailedListener{
 
 
     private static final String TAG = "MainActivity";
@@ -72,10 +76,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
         checkSelfPermission(Manifest.permission.BODY_SENSORS);
 
-        mSensorManager =
-                (SensorManager)getSystemService(SENSOR_SERVICE);
-        mHeartRate = mSensorManager.getDefaultSensor(
-                Sensor.TYPE_HEART_RATE);
+
 
 
 
@@ -95,6 +96,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         stopMeasure();
     }
 
+
+
+
     public void OnClickBtn(View v){
          checkSelfPermission(Manifest.permission.BODY_SENSORS);
         if (checkSelfPermission(Manifest.permission.BODY_SENSORS)
@@ -110,7 +114,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             }
         }
         else{
-            System.out.print("NOt working.");
+            System.out.println("NOt working. ");
         }
         startMeasure();
     }
@@ -131,42 +135,67 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
     private void startMeasure() {
 
-        final int measurementDuration   = 30;   // Seconds
-        final int measurementBreak = 15; // Seconds
 
-        mScheduler = Executors.newScheduledThreadPool(1);
-        mScheduler.scheduleAtFixedRate(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "register Heartrate Sensor");
-                        mSensorManager.registerListener(MainActivity.this, mHeartRate, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager =
+                (SensorManager)getSystemService(SENSOR_SERVICE);
+        mHeartRate = mSensorManager.getDefaultSensor(
+                Sensor.TYPE_HEART_RATE);
 
-                        try {
-                            Thread.sleep(measurementDuration * 1000);
-                        } catch (InterruptedException e) {
-                            Log.e(TAG, "Interrupted while waitting to unregister Heartrate Sensor");
+        if (mHeartRate != null) {
+
+            final int measurementDuration   = 30;   // Seconds
+            final int measurementBreak = 15; // Seconds
+
+            mScheduler = Executors.newScheduledThreadPool(1);
+            mScheduler.scheduleAtFixedRate(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d(TAG, "register Heartrate Sensor");
+                            mSensorManager.registerListener(MainActivity.this, mHeartRate, SensorManager.SENSOR_DELAY_FASTEST);
+
+                            try {
+                                Thread.sleep(measurementDuration * 1000);
+                            } catch (InterruptedException e) {
+                                Log.e(TAG, "Interrupted while waitting to unregister Heartrate Sensor");
+                            }
+
+                            Log.d(TAG, "unregister Heartrate Sensor");
+                            mSensorManager.unregisterListener(MainActivity.this, mHeartRate);
                         }
-
-                        Log.d(TAG, "unregister Heartrate Sensor");
-                        mSensorManager.unregisterListener(MainActivity.this, mHeartRate);
                     }
-                }
-                , 3, measurementDuration + measurementBreak, TimeUnit.SECONDS);
+                    , 3, measurementDuration + measurementBreak, TimeUnit.SECONDS);
+        }  else {
+            Log.d(TAG, "No Heartrate Sensor found");
+        }
+
+
+
 
         //boolean sensorRegistered = mSensorManager.registerListener(this, mHeartRate, SensorManager.SENSOR_DELAY_FASTEST);
         //Log.d("Sensor Status:", " Sensor registered: " + (sensorRegistered ? "yes" : "no"));
     }
 
     private void stopMeasure() {
-        mSensorManager.unregisterListener(this);
-        mScheduler.shutdown();
+       // mSensorManager.unregisterListener(this);
+       // mScheduler.shutdown();
+
+        if (mSensorManager != null) {
+            mSensorManager.unregisterListener(this);
+        }
+        if (mScheduler != null && !mScheduler.isTerminated()) {
+            mScheduler.shutdown();
+        }
     }
 
 
 
     public void onClickBtnI(View v){
         System.out.println("PRoba");
+    }
+
+    public void OnClickBtnS(View v){
+        logAvailableSensors();
     }
 
 
@@ -190,16 +219,31 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-
+        Log.d(TAG, "SendSensor data is in progress");
         client.sendSensorData(sensorEvent.sensor.getType(), sensorEvent.accuracy, sensorEvent.timestamp, sensorEvent.values);
         // Printing message and loging just to see if method is called
         System.out.println("SendSensorData success!!!");
         Log.d(TAG, "SendSensor data success");
+
 
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+        Log.d(TAG, "This is accuracy changed");
     }
+
+    private void logAvailableSensors() {
+        final List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+        Log.d(TAG, "=== LIST AVAILABLE SENSORS ===");
+        Log.d(TAG, String.format(Locale.getDefault(), "|%-35s|%-38s|%-6s|", "SensorName", "StringType", "Type"));
+        for (Sensor sensor : sensors) {
+            Log.v(TAG, String.format(Locale.getDefault(), "|%-35s|%-38s|%-6s|", sensor.getName(), sensor.getStringType(), sensor.getType()));
+        }
+
+        Log.d(TAG, "=== LIST AVAILABLE SENSORS ===");
+    }
+
+
 }

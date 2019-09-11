@@ -1,12 +1,17 @@
 package com.diplomska.diplomska_wear_phone_2;
 
 import android.Manifest;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.util.SparseLongArray;
+
+import androidx.annotation.Nullable;
 
 import com.mobvoi.android.common.ConnectionResult;
 import com.mobvoi.android.common.api.MobvoiApiClient;
@@ -16,10 +21,12 @@ import com.mobvoi.android.wearable.PutDataMapRequest;
 import com.mobvoi.android.wearable.PutDataRequest;
 import com.mobvoi.android.wearable.Wearable;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class DeviceClient implements  MobvoiApiClient.ConnectionCallbacks, MobvoiApiClient.OnConnectionFailedListener  {
+public class DeviceClient  implements  MobvoiApiClient.ConnectionCallbacks, MobvoiApiClient.OnConnectionFailedListener  {
 
     private Context context;
     private static final String TAG = "/DeviceClient";
@@ -49,6 +56,10 @@ public class DeviceClient implements  MobvoiApiClient.ConnectionCallbacks, Mobvo
                 .addOnConnectionFailedListener(this)
                 .addApi(Wearable.API)
                 .build();
+
+
+        lastSensorData = new SparseLongArray();
+        executorService = Executors.newCachedThreadPool();
 
 
     }
@@ -92,7 +103,11 @@ public class DeviceClient implements  MobvoiApiClient.ConnectionCallbacks, Mobvo
 
     private void sendSensorDataInBackground(int sensorType, int accuracy, long timestamp, float[] values){
 
-        // dodaj sensorType filter pozneje
+        if (sensorType == filterId) {
+            Log.i(TAG, "Sensor " + sensorType + " = " + Arrays.toString(values));
+        } else {
+            Log.d(TAG, "Sensor " + sensorType + " = " + Arrays.toString(values));
+        }
 
 
         PutDataMapRequest dataMap = PutDataMapRequest.create("/sensors/" + sensorType);
@@ -144,4 +159,7 @@ public class DeviceClient implements  MobvoiApiClient.ConnectionCallbacks, Mobvo
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
+
+
+
 }
